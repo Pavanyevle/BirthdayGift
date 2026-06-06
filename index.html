@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Gift ❤️</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --rose-gold: #b76e79;
+            --rose-light: #e0bfb8;
+            --dark-bg: #050505;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { 
+            background-color: var(--dark-bg); 
+            color: #fff; 
+            overflow-x: hidden; 
+            background-image: radial-gradient(circle at center, #1a1014 0%, #050505 100%);
+            background-size: 110% 110%;
+            background-position: center;
+            transition: background-position 0.1s ease-out;
+        }
+
+        /* --- New Start Screen --- */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--dark-bg); z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+
+        /* --- Cinematic Intro --- */
+        #cinematic-intro {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: #000; display: none; justify-content: center; align-items: center;
+            z-index: 9999; text-align: center; padding: 20px;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .intro-text {
+            font-family: 'Cinzel', serif; font-size: 2rem; color: #fff;
+            letter-spacing: 5px; opacity: 0;
+        }
+        .intro-name {
+            font-family: 'Great Vibes', cursive; font-size: 6rem;
+            color: var(--rose-gold); opacity: 0; display: none;
+            text-shadow: 0 0 20px rgba(183, 110, 121, 0.5);
+        }
+
+        @keyframes fadeInOut { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- Canvas Container --- */
+        #canvas-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            z-index: -1; pointer-events: none; opacity: 0.6;
+        }
+
+        /* --- Main Content Area --- */
+        #main-content { display: none; padding: 50px 20px; text-align: center; }
+
+        .glass-card {
+            background: rgba(20, 20, 20, 0.65); backdrop-filter: blur(15px);
+            border: 1px solid rgba(183, 110, 121, 0.3); border-radius: 20px;
+            padding: 30px; margin: 30px auto; width: 100%; max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        h2.section-title { font-family: 'Cinzel', serif; color: var(--rose-gold); margin-bottom: 20px; font-size: 2rem; }
+
+        /* --- Photo Scrolling Section --- */
+        .photo-gallery-container { width: 100%; overflow: hidden; border-radius: 15px; padding: 10px 0; }
+        .photo-gallery { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--rose-gold) transparent; }
+        .photo-gallery::-webkit-scrollbar { height: 8px; }
+        .photo-gallery::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .photo-gallery::-webkit-scrollbar-thumb { background: var(--rose-gold); border-radius: 10px; }
+        .photo-gallery img { width: 250px; height: 300px; object-fit: cover; border-radius: 12px; scroll-snap-align: center; flex-shrink: 0; border: 2px solid var(--rose-gold); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: transform 0.3s ease; }
+        .photo-gallery img:hover { transform: scale(1.03); }
+
+        /* --- Premium Buttons --- */
+        .btn {
+            padding: 15px 40px; font-size: 1.2rem; margin-top: 20px;
+            background: transparent; border: 2px solid var(--rose-gold); color: var(--rose-light);
+            border-radius: 50px; cursor: pointer; transition: 0.4s; letter-spacing: 2px;
+        }
+        .btn:hover { background: var(--rose-gold); color: #000; box-shadow: 0 0 25px var(--rose-gold); transform: translateY(-5px); }
+        
+        .start-btn { background: var(--rose-gold); color: #000; box-shadow: 0 0 15px var(--rose-gold); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* --- Final Surprise Page --- */
+        #final-surprise {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px; backdrop-filter: blur(10px);
+        }
+        .final-letter { max-width: 600px; background: rgba(183, 110, 121, 0.1); border: 1px solid var(--rose-gold); padding: 40px; border-radius: 20px; box-shadow: 0 0 40px rgba(183,110,121,0.4); animation: slideUp 1.5s ease; }
+        .final-letter p { font-family: 'Great Vibes', cursive; font-size: 2rem; color: var(--rose-light); line-height: 1.6; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="start-screen">
+        <h2 style="font-family: 'Cinzel', serif; color: var(--rose-gold); margin-bottom: 30px;">A Special Surprise Awaits...</h2>
+        <button class="btn start-btn" id="open-gift-btn">Tap to Open Gift 🎁</button>
+    </div>
+
+    <div id="cinematic-intro">
+        <div class="intro-text" id="intro-text">A Special Gift For Someone Amazing...</div>
+        <div class="intro-name" id="intro-name">Pavan</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="main-content">
+        <div class="glass-card">
+            <h2 class="section-title">Happy Birthday! 🎂</h2>
+            <p style="color: var(--rose-light); font-size: 1.2rem; line-height: 1.8;">
+                Welcome to your special universe. Scroll down to relive our best moments.
+            </p>
+        </div>
+
+        <div class="glass-card">
+            <h2 class="section-title">Our Memories 📸</h2>
+            <div class="photo-gallery-container">
+                <div class="photo-gallery">
+                    <img src="photo1.jpeg" alt="Memory 1">
+                    <img src="photo1.jpeg" alt="Memory 2">
+                    <img src="photo1.jpeg" alt="Memory 3">
+                    <img src="photo1.jpeg" alt="Memory 4">
+                    <img src="photo1.jpeg" alt="Memory 5">
+                </div>
+            </div>
+            <p style="color: #888; font-size: 0.9rem; margin-top: 10px;">Swipe right to see more memories</p>
+        </div>
+
+        <button class="btn" onclick="showFinalSurprise()">One Last Surprise ❤️</button>
+    </div>
+
+    <div id="final-surprise">
+        <div class="final-letter">
+            <h2 style="font-family: 'Cinzel', serif; color: var(--rose-gold); margin-bottom: 20px;">Happy Birthday, My Love</h2>
+            <p>
+                "You are the best thing that ever happened to me. <br>
+                Thank you for being my light, my happiness, and my everything. <br>
+                Here is to celebrating you today, tomorrow, and forever."
+            </p>
+        </div>
+        <button class="btn" onclick="location.reload()" style="margin-top: 40px;">Replay Magic ✨</button>
+    </div>
+
+    <script>
+        // --- START BUTTON LOGIC (Plays Music & Starts Intro) ---
+        document.getElementById('open-gift-btn').addEventListener('click', function() {
+            // 1. Play Music
+            let music = document.getElementById('bgMusic');
+            music.volume = 0.6; // Keep volume slightly pleasant
+            music.play().catch(e => console.log("Audio play failed:", e));
+
+            // 2. Hide Start Screen
+            document.getElementById('start-screen').style.display = 'none';
+            
+            // 3. Show & Start Cinematic Intro
+            let introScreen = document.getElementById('cinematic-intro');
+            let introText = document.getElementById('intro-text');
+            introScreen.style.display = 'flex';
+            introText.style.animation = 'fadeInOut 4s ease-in-out forwards';
+
+            // Intro Animations Timing
+            setTimeout(() => {
+                introText.style.display = 'none';
+                document.getElementById('intro-name').style.display = 'block';
+                document.getElementById('intro-name').style.animation = 'fadeIn 2s ease-in-out forwards';
+                
+                setTimeout(() => {
+                    introScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        introScreen.style.display = 'none';
+                        document.getElementById('main-content').style.display = 'block';
+                        initThreeJS(); // Start 3D hearts
+                    }, 1500);
+                }, 3000);
+            }, 3800);
+        });
+
+        // --- Parallax Effect ---
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 20;
+            const y = (e.clientY / window.innerHeight - 0.5) * 20;
+            document.body.style.backgroundPosition = `calc(50% + ${x}px) calc(50% + ${y}px)`;
+        });
+
+        // --- Final Surprise (Fireworks) ---
+        function showFinalSurprise() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('final-surprise').style.display = 'flex';
+            continuousFireworks();
+        }
+
+        function continuousFireworks() {
+            var duration = 15 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) { return clearInterval(interval); }
+                var particleCount = 50 * (timeLeft / duration);
+                
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }, colors: ['#b76e79', '#ffffff', '#ffd700'] }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }, colors: ['#b76e79', '#ffffff', '#ffd700'] }));
+            }, 250);
+        }
+
+        // --- Three.js Hearts ---
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xffffff, 1);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            const x = 0, y = 0;
+            const heartShape = new THREE.Shape();
+            heartShape.moveTo( x + 5, y + 5 );
+            heartShape.bezierCurveTo( x + 5, y + 5, x + 4, y, x, y );
+            heartShape.bezierCurveTo( x - 6, y, x - 6, y + 7,x - 6, y + 7 );
+            heartShape.bezierCurveTo( x - 6, y + 11, x - 3, y + 15.4, x + 5, y + 19 );
+            heartShape.bezierCurveTo( x + 12, y + 15.4, x + 16, y + 11, x + 16, y + 7 );
+            heartShape.bezierCurveTo( x + 16, y + 7, x + 16, y, x + 10, y );
+            heartShape.bezierCurveTo( x + 7, y, x + 5, y + 5, x + 5, y + 5 );
+
+            const extrudeSettings = { depth: 2, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+            const geometry = new THREE.ExtrudeGeometry( heartShape, extrudeSettings );
+            
+            geometry.computeBoundingBox();
+            const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+            const centerYOffset = -0.5 * (geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+            geometry.translate(centerOffset, centerYOffset, 0);
+
+            const material = new THREE.MeshStandardMaterial({ color: 0xb76e79, metalness: 0.8, roughness: 0.2 });
+
+            const hearts = [];
+            for(let i=0; i<15; i++) {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.x = (Math.random() - 0.5) * 100;
+                mesh.position.y = (Math.random() - 0.5) * 100;
+                mesh.position.z = (Math.random() - 0.5) * 50 - 30;
+                mesh.scale.set(0.2, 0.2, 0.2);
+                mesh.rotation.z = Math.PI; 
+                scene.add(mesh);
+                hearts.push({ mesh: mesh, rotX: Math.random() * 0.02, rotY: Math.random() * 0.02, speedY: Math.random() * 0.1 + 0.05 });
+            }
+
+            camera.position.z = 30;
+
+            function animate() {
+                requestAnimationFrame(animate);
+                hearts.forEach(h => {
+                    h.mesh.rotation.x += h.rotX;
+                    h.mesh.rotation.y += h.rotY;
+                    h.mesh.position.y += h.speedY;
+                    if(h.mesh.position.y > 40) { h.mesh.position.y = -40; h.mesh.position.x = (Math.random() - 0.5) * 100; }
+                });
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+    </script>
+</body>
+</html>
